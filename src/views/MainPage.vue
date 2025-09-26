@@ -142,11 +142,13 @@ const execute = async () => {
 
           <el-form-item class="btn">
             <!-- 修正按钮类型 -->
-            <el-button type="primary" @click="execute">
+            <el-button type="primary" @click="execute" round style="width:150px; height: 40px;">
               {{ cipherMode === 'decode' ? '开始解密' : '开始加密' }}
             </el-button>
-            <el-button @click="switchCipherModel">切换模式</el-button>
+            <el-button @click="switchCipherModel" round style="width:150px; height: 40px;">切换模式</el-button>
+            <el-button round style="width:150px; height: 40px;" type="warning">暴力破解</el-button>
           </el-form-item>
+          
         </el-form>
       </el-col>
     </el-row>
@@ -160,7 +162,8 @@ const execute = async () => {
   margin-top: 150px;
 }
 .col{
-  background-color: rgb(169,169,169);
+  background-color: rgb(230,230,230);
+  border-radius: 20px;
   padding: 20px;
   display: flex;
   align-items: center;
