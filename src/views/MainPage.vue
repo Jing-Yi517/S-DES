@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { getKeys } from '@/utils/key'
 import { encode } from '@/utils/encode'
-import { ElMessage } from 'element-plus'
 import { decode } from '@/utils/decode'
 
 const cipherModeList = ['simple','ASCII','decode'] // 加密解密状态数组
