@@ -65,6 +65,13 @@ const switchCipherModel = () => {
     } else {
       cipherMode.value = cipherModeList[index-2]
     }
+    formModel.value ={
+      simple:'',
+      ASCII:'',
+      decode:'',
+      key:'',
+      result:''
+    }
   }
 }
 
