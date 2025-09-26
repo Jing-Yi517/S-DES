@@ -5,8 +5,9 @@ import { encode } from '@/utils/encode'
 import { ElMessage } from 'element-plus'
 import { decode } from '@/utils/decode'
 
-const cipherModeList = ['simple','ASCII','decode']
-const cipherMode = ref('simple')
+const cipherModeList = ['simple','ASCII','decode'] // 加密解密状态数组
+const cipherMode = ref('simple') // 控制当前加密解密状态
+// 表单数据
 const formModel = ref({
   simple:'',
   ASCII:'',
@@ -14,8 +15,9 @@ const formModel = ref({
   key:'',
   result:''
 })
-const form = ref(null)
+const form = ref(null) // 用于获取表单实例，进行表单验证
 
+//表单验证规则
 const rules = {
   key: [
     { required: true, message: '请输入密钥', trigger: 'blur' },
@@ -55,6 +57,7 @@ const rules = {
   ]
 }
 
+// 加密，解密模式切换
 const switchCipherModel = () => {
   const index = cipherModeList.indexOf(cipherMode.value)
   if(index !== -1){
@@ -66,6 +69,7 @@ const switchCipherModel = () => {
   }
 }
 
+// 执行加密/ 解密逻辑
 const execute = async () => {
   try {
     await form.value.validate()
