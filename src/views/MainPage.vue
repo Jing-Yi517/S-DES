@@ -163,7 +163,7 @@ const runBrute = async () => {
     if (bruteRunning.value) return
     bruteRunning.value = true
 
-    // 调用导入的 brute 函数（单线程）
+    // 调用导入的 brute 函数
     const res = brute(
       bruteFormModel.value.message,
       bruteFormModel.value.cipher,
