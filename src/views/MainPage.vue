@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { getKeys } from '@/utils/key'
 import { encode } from '@/utils/encode'
 import { decode } from '@/utils/decode'
+import { encodeAscii } from '@/utils/ascii'
 
 const cipherModeList = ['simple','ASCII','decode'] // 加密解密状态数组
 const cipherMode = ref('simple') // 控制当前加密解密状态
@@ -98,8 +99,10 @@ const execute = async () => {
         ElMessage({type:'error', message: '请输入ASCII字符串'})
         return
       }
-      // 这里需要实现ASCII到二进制的转换和加密逻辑
-      ElMessage({type:'info', message: 'ASCII模式功能待实现'})
+      const keys = getKeys(formModel.value.key)
+      const encodeMessage = encodeAscii(formModel.value.ASCII,keys.key1,keys.key2)
+      console.log('加密结果:', encodeMessage)
+      formModel.value.result = encodeMessage
     }
   } catch (err) {
     console.error('执行错误:', err)
