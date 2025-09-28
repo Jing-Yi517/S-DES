@@ -1,5 +1,5 @@
 import { encode } from "./encode"
-import { decode } from "./decode"
+
 
 /**
  * 将ASCII码字符串转化为二进制字符串
