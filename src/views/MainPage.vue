@@ -4,10 +4,57 @@ import { getKeys } from '@/utils/key'
 import { encode } from '@/utils/encode'
 import { decode } from '@/utils/decode'
 import { encodeAscii } from '@/utils/ascii'
+import { brute } from '@/utils/brute'
+import { ElMessage } from 'element-plus'
 
 const cipherModeList = ['simple','ASCII','decode'] // 加密解密状态数组
 const cipherMode = ref('simple') // 控制当前加密解密状态
 // 表单数据
+
+const bruteFormModel = ref({
+  message:'',
+  cipher:'',
+  isAll:false
+})
+const bruteForm = ref(null)
+const bruteRunning = ref(false)
+const isDialogVisible = ref(false)
+const bruteFormRules = {
+  message:[
+    {
+      validator: (rule, value, callback) => {
+        if (cipherMode.value === 'simple') {
+          if (!value) {
+            return callback(new Error('请输入8位二进制数据'))
+          }
+          if (!/^[01]{8}$/.test(value)) {
+            return callback(new Error('数据必须是8位二进制'))
+          }
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
+  ],
+  cipher:[
+    {
+      validator: (rule, value, callback) => {
+        if (cipherMode.value === 'simple') {
+          if (!value) {
+            return callback(new Error('请输入8位二进制数据'))
+          }
+          if (!/^[01]{8}$/.test(value)) {
+            return callback(new Error('数据必须是8位二进制'))
+          }
+        }
+        callback()
+      },
+      trigger: 'blur'
+    }
+  ],
+  isAll:[]
+
+}
 const formModel = ref({
   simple:'',
   ASCII:'',
@@ -16,7 +63,6 @@ const formModel = ref({
   result:''
 })
 const form = ref(null) // 用于获取表单实例，进行表单验证
-
 //表单验证规则
 const rules = {
   key: [
@@ -109,6 +155,57 @@ const execute = async () => {
     ElMessage({type:'error', message: err.message || String(err)})
   }
 }
+
+const runBrute = async () => {
+  try {
+    await bruteForm.value.validate()
+    // 防重入
+    if (bruteRunning.value) return
+    bruteRunning.value = true
+
+    // 调用导入的 brute 函数（单线程）
+    const res = brute(
+      bruteFormModel.value.message,
+      bruteFormModel.value.cipher,
+      { all: bruteFormModel.value.isAll }
+    )
+
+    const startTime = res.startTime || res.startISO || ''
+    const endTime = res.endTime || res.endISO || ''
+    const elapsedMs = res.elapsedMs != null ? res.elapsedMs : ''
+
+    if (res.found && res.found.length) {
+      // 只提取 key10 列表
+      const keys = res.found.map(f => f.key10)
+      // 把 keys 用逗号拼接成字符串
+      const keysText = keys.join(', ')
+
+      // 用 ElMessage 显示所有 key10（只显示 key10）
+      ElMessage({
+        type: 'success',
+        message: `找到 ${keys.length} 个候选密钥：${keysText}(耗时为${elapsedMs})MS`,
+        duration: 8000
+      })
+
+      // 控制台仍输出完整信息
+      console.log('暴力破解结果：', { startTime, endTime, elapsedMs, found: res.found })
+    } else {
+      ElMessage({
+        type: 'warning',
+        message: `未找到匹配密钥（耗时 ${elapsedMs} ms）`,
+        duration: 4000
+      })
+    }
+
+    // 关闭对话框
+    isDialogVisible.value = false
+  } catch (err) {
+    console.error('暴力破解出错:', err)
+    ElMessage({ type:'error', message: err.message || String(err) })
+  } finally {
+    bruteRunning.value = false
+  }
+}
 </script>
 
 <template>
@@ -149,12 +246,31 @@ const execute = async () => {
               {{ cipherMode === 'decode' ? '开始解密' : '开始加密' }}
             </el-button>
             <el-button @click="switchCipherModel" round style="width:150px; height: 40px;">切换模式</el-button>
-            <el-button round style="width:150px; height: 40px;" type="warning">暴力破解</el-button>
+            <el-button round style="width:150px; height: 40px;" type="warning" @click="isDialogVisible = true">暴力破解</el-button>
           </el-form-item>
           
         </el-form>
       </el-col>
     </el-row>
+    <el-dialog title="暴力破解密匙" width="500" v-model="isDialogVisible">
+      <el-form  :model="bruteFormModel" :rules="bruteFormRules" ref="bruteForm">
+        <el-form-item label="明文" prop="message">
+          <el-input v-model="bruteFormModel.message"></el-input>
+        </el-form-item>
+        <el-form-item label="密文" prop="cipher">
+          <el-input v-model="bruteFormModel.cipher"></el-input>
+        </el-form-item>
+        <el-form-item label="是否寻找全部密匙" prop="isAll">
+          <el-switch
+            v-model="bruteFormModel.isAll"
+            size="large"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="runBrute">开始破解</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
